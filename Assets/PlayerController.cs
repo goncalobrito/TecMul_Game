@@ -15,4 +15,25 @@ public class PlayerMovement : MonoBehaviour
     }
 }
 
+<<<<<<< Updated upstream
 //testecomit
+=======
+    void RodarCamera()
+    {
+        // Input do Rato
+        float mouseX = Input.GetAxis("Mouse X") * sensibilidadeRato * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * sensibilidadeRato * Time.deltaTime;
+
+        // Roda o corpo do jogador (Esquerda/Direita)
+        transform.Rotate(Vector3.up * mouseX);
+
+        // Roda a câmara (Cima/Baixo) com limite de 90 graus
+        rotacaoX -= mouseY;
+        rotacaoX = Mathf.Clamp(rotacaoX, -90f, 90f);
+        cameraTransform.localRotation = Quaternion.Euler(rotacaoX, 0f, 0f);
+    }
+}
+
+
+//testeeeeeeeeeeeeeeeeee
+>>>>>>> Stashed changes
