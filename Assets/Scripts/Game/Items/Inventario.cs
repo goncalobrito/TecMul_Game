@@ -17,16 +17,63 @@ public class Inventario : MonoBehaviour
     public Transform pontoNaMao; // filho da câmara, posicionado à frente
     private GameObject itemVisualAtual;
 
+    [Header("Drop")]
+    public Transform pontoDropar; // posição à frente do jogador
+    public float forcaDrop = 3f;
+
+    public void DroparItemAtual()
+    {
+        ItemData item = ItemSelecionado();
+        if (item == null) return;
+
+        GameObject dropado = Instantiate(
+            item.prefabNaMao, // mesmo prefab
+            pontoDropar.position,
+            Quaternion.identity
+        );
+
+        // Reativa física quando dropa
+        Rigidbody rb = dropado.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(pontoDropar.forward * forcaDrop, ForceMode.Impulse);
+        }
+
+        Collider col = dropado.GetComponent<Collider>();
+        if (col != null) col.enabled = true;
+
+        // Adiciona o ItemMundo para poder ser apanhado de novo
+        ItemMundo itemMundo = dropado.GetComponent<ItemMundo>();
+        if (itemMundo == null) itemMundo = dropado.AddComponent<ItemMundo>();
+        itemMundo.dados = item;
+
+        RemoverItem(item);
+    }
+
     public void MostrarItemNaMao(ItemData item)
     {
         if (itemVisualAtual != null) Destroy(itemVisualAtual);
         if (item == null || item.prefabNaMao == null) return;
+
         itemVisualAtual = Instantiate(item.prefabNaMao, pontoNaMao);
         itemVisualAtual.transform.localPosition = Vector3.zero;
         itemVisualAtual.transform.localRotation = Quaternion.identity;
+
+        // Desativa física em todos os Rigidbodies (pai e filhos)
+        foreach (Rigidbody rb in itemVisualAtual.GetComponentsInChildren<Rigidbody>())
+            rb.isKinematic = true;
+
+        // Desativa todos os Colliders (pai e filhos)
+        foreach (Collider col in itemVisualAtual.GetComponentsInChildren<Collider>())
+            col.enabled = false;
     }
 
-    void Awake() => Instance = this;
+    void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+    }
 
     void Update()
     {
@@ -40,9 +87,9 @@ public class Inventario : MonoBehaviour
         for (int i = 0; i < maxSlots; i++)
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                 slotSelecionado = i;
-        
+
         if (slotSelecionado != slotAnterior)
-        MostrarItemNaMao(ItemSelecionado());
+            MostrarItemNaMao(ItemSelecionado());
     }
 
     public bool AdicionarItem(ItemData item)
@@ -60,6 +107,7 @@ public class Inventario : MonoBehaviour
         if (slotSelecionado >= itens.Count)
             slotSelecionado = Mathf.Max(0, itens.Count - 1);
         inventarioMudou?.Invoke();
+        MostrarItemNaMao(ItemSelecionado()); // 👈 adiciona esta linha
     }
 
     public ItemData ItemSelecionado()

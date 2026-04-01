@@ -9,6 +9,12 @@ public class InteracaoJogador : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale == 0f) { textoUI.SetActive(false); return; }
+
+        // Drop com Q
+        if (Input.GetKeyDown(KeyCode.Q))
+            Inventario.Instance.DroparItemAtual();
+
         Ray raio = cameraPrincipal.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
@@ -17,7 +23,8 @@ public class InteracaoJogador : MonoBehaviour
             // Verifica se o objeto tem uma das tags de interesse
             bool eInteragivel = hit.collider.CompareTag("Item") ||
                                hit.collider.CompareTag("Porta") ||
-                               hit.collider.CompareTag("Interactable");
+                               hit.collider.CompareTag("Interactable") ||
+                               hit.collider.CompareTag("Nota");
 
             if (eInteragivel)
             {
@@ -38,7 +45,10 @@ public class InteracaoJogador : MonoBehaviour
                     // USAR ITEM NO INTERACTABLE
                     if (hit.collider.CompareTag("Interactable"))
                     {
-                        // ... botões de cor que já tens
+                        // Botões de cor
+                        ColorButton botao = hit.collider.GetComponent<ColorButton>();
+                        if (botao != null)
+                            botao.AtivarBotao();
 
                         // Tentar usar item selecionado
                         ItemRecetor recetor = hit.collider.GetComponent<ItemRecetor>();
@@ -58,6 +68,12 @@ public class InteracaoJogador : MonoBehaviour
                             else
                                 porta.AbrirFechar(); // porta sem tranca
                         }
+                    }
+
+                    if (hit.collider.CompareTag("Nota"))
+                    {
+                        NotaMundo nota = hit.collider.GetComponent<NotaMundo>();
+                        if (nota != null) nota.Ler();
                     }
                 }
             }

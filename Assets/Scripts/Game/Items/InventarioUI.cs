@@ -3,21 +3,40 @@ using UnityEngine.UI;
 
 public class InventarioUI : MonoBehaviour
 {
-    public GameObject[] slots;          // 5 painéis de slot no Canvas
-    public Image[] icones;              // Image dentro de cada slot
-    public GameObject[] selecaoVisual; // borda/highlight do slot ativo
+    public GameObject[] slots;
+    public Image[] icones;
+    public Image[] selecaoVisual; // 👈 muda para Image em vez de GameObject
+
+    private ColorManager colorManager;
 
     void Start()
     {
+        if (Inventario.Instance == null)
+        {
+            Debug.LogError("Inventario não encontrado na cena!");
+            return;
+        }
         Inventario.Instance.inventarioMudou += AtualizarUI;
+        colorManager = Object.FindFirstObjectByType<ColorManager>();
         AtualizarUI();
     }
 
     void Update()
     {
-        // Atualiza o slot selecionado visualmente
         for (int i = 0; i < slots.Length; i++)
-            selecaoVisual[i].SetActive(i == Inventario.Instance.slotSelecionado);
+        {
+            if (selecaoVisual[i] == null)
+            {
+                Debug.LogError($"selecaoVisual[{i}] está vazio no Inspector!");
+                continue;
+            }
+
+            bool selecionado = i == Inventario.Instance.slotSelecionado;
+            selecaoVisual[i].gameObject.SetActive(selecionado);
+
+            if (selecionado && colorManager != null)
+                selecaoVisual[i].color = colorManager.CorNormalizada;
+        }
     }
 
     void AtualizarUI()

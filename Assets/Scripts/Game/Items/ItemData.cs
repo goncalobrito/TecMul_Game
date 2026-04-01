@@ -7,6 +7,6 @@ public class ItemData : ScriptableObject
     public Sprite icone;
     public enum TipoItem { Chave, Nota, Objeto }
     public TipoItem tipo;
-    public GameObject prefabNaMao;
     [TextArea] public string descricao;
+    public GameObject prefabNaMao; // único prefab para tudo
 }

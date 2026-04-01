@@ -8,14 +8,18 @@ public class ColorManager : MonoBehaviour
     public Color corAtual = Color.white;
     public float intensidade = 5f;
 
-    [Header("Referências da Cena")]
-    public Light luzPrincipal;
-
-    // Já não precisas do array manual — vai buscar pela tag
     private Renderer[] paredesBrilhantes;
+    private Light[] luzesLed;
     private List<HiddenObject> itensEscondidos = new List<HiddenObject>();
 
     public void RegistrarObjeto(HiddenObject obj) => itensEscondidos.Add(obj);
+
+    public Color CorNormalizada => new Color(
+        Mathf.Clamp01(corAtual.r),
+        Mathf.Clamp01(corAtual.g),
+        Mathf.Clamp01(corAtual.b),
+        1f
+    );
 
     void Start()
     {
@@ -24,30 +28,48 @@ public class ColorManager : MonoBehaviour
 
     void BuscarLeds()
     {
+        // Busca tudo com tag Led
         GameObject[] leds = GameObject.FindGameObjectsWithTag("Led");
-        paredesBrilhantes = new Renderer[leds.Length];
-        for (int i = 0; i < leds.Length; i++)
-            paredesBrilhantes[i] = leds[i].GetComponent<Renderer>();
-        
-        Debug.Log($"Encontrados {leds.Length} LEDs na cena.");
+
+        List<Renderer> renderers = new List<Renderer>();
+        List<Light> luzes = new List<Light>();
+
+        foreach (GameObject led in leds)
+        {
+            Renderer ren = led.GetComponent<Renderer>();
+            if (ren != null) renderers.Add(ren);
+
+            Light luz = led.GetComponent<Light>();
+            if (luz != null) luzes.Add(luz);
+        }
+
+        paredesBrilhantes = renderers.ToArray();
+        luzesLed = luzes.ToArray();
+
+        Debug.Log($"Encontrados {renderers.Count} LEDs e {luzes.Count} luzes.");
     }
 
     void Update()
     {
         Color corFinal = corAtual * intensidade;
 
-        if (luzPrincipal != null)
-        {
-            luzPrincipal.color = corAtual;
-            luzPrincipal.intensity = intensidade;
-        }
-
+        // Atualiza Renderers (barras LED)
         foreach (Renderer ren in paredesBrilhantes)
         {
             if (ren != null)
             {
                 ren.material.SetColor("_EmissionColor", corFinal);
                 ren.material.EnableKeyword("_EMISSION");
+            }
+        }
+
+        // Atualiza Luzes (luz principal e outras com tag Led)
+        foreach (Light luz in luzesLed)
+        {
+            if (luz != null)
+            {
+                luz.color = corAtual;
+                luz.intensity = intensidade;
             }
         }
 

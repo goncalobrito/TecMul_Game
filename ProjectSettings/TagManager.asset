@@ -8,6 +8,7 @@ TagManager:
   - Item
   - Porta
   - Led
+  - Nota
   layers:
   - Default
   - TransparentFX
