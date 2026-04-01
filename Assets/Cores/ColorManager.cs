@@ -4,32 +4,44 @@ using System.Collections.Generic;
 public class ColorManager : MonoBehaviour
 {
     [Header("Configurações de Cor")]
-    [ColorUsage(true, true)] 
+    [ColorUsage(true, true)]
     public Color corAtual = Color.white;
     public float intensidade = 5f;
 
     [Header("Referências da Cena")]
     public Light luzPrincipal;
-    public Renderer[] paredesBrilhantes;
 
-    // Lista automática de objetos que se escondem
+    // Já não precisas do array manual — vai buscar pela tag
+    private Renderer[] paredesBrilhantes;
     private List<HiddenObject> itensEscondidos = new List<HiddenObject>();
 
-    // Função para outros scripts registrarem objetos escondidos aqui
     public void RegistrarObjeto(HiddenObject obj) => itensEscondidos.Add(obj);
+
+    void Start()
+    {
+        BuscarLeds();
+    }
+
+    void BuscarLeds()
+    {
+        GameObject[] leds = GameObject.FindGameObjectsWithTag("Led");
+        paredesBrilhantes = new Renderer[leds.Length];
+        for (int i = 0; i < leds.Length; i++)
+            paredesBrilhantes[i] = leds[i].GetComponent<Renderer>();
+        
+        Debug.Log($"Encontrados {leds.Length} LEDs na cena.");
+    }
 
     void Update()
     {
         Color corFinal = corAtual * intensidade;
 
-        // 1. Atualiza a Luz
         if (luzPrincipal != null)
         {
             luzPrincipal.color = corAtual;
             luzPrincipal.intensity = intensidade;
         }
 
-        // 2. Atualiza as Paredes
         foreach (Renderer ren in paredesBrilhantes)
         {
             if (ren != null)
@@ -39,10 +51,7 @@ public class ColorManager : MonoBehaviour
             }
         }
 
-        // 3. Avisa os objetos escondidos para checarem a camuflagem
         foreach (HiddenObject item in itensEscondidos)
-        {
             item.ChecarVisibilidade(corAtual);
-        }
     }
 }

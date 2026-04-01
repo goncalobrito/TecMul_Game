@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 
 public class PortaMecanismo : MonoBehaviour
@@ -24,4 +25,6 @@ public class PortaMecanismo : MonoBehaviour
         Quaternion alvo = aberta ? rotDestino : rotOriginal;
         transform.rotation = Quaternion.Slerp(transform.rotation, alvo, Time.deltaTime * velocidade);
     }
+    
 }
+*/
