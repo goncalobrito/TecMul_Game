@@ -1,27 +1,23 @@
 using UnityEngine;
 
-public class ColorButton : MonoBehaviour
+public class ColorButton : MonoBehaviour, IInteragivel
 {
-    public Color corDesteBotao; // Define a cor no Inspector
+    public Color corDesteBotao;
     public ColorManager gerenciador;
+
+    public string TextoInteracao() => "Ativar";
 
     void Start()
     {
-        
         GetComponent<Renderer>().material.color = corDesteBotao;
     }
 
-  
-    public void AtivarBotao()
-{
-    if (gerenciador != null)
+    public void Interagir()
     {
-        gerenciador.corAtual = corDesteBotao;
-        Debug.Log("Sala mudou para a cor: " + corDesteBotao);
+        if (gerenciador != null)
+            gerenciador.corAtual = corDesteBotao;
+
+        if (PuzzleManager.Instance != null)
+            PuzzleManager.Instance.RegistarCor(corDesteBotao);
     }
-
-
-    if (PuzzleManager.Instance != null)
-        PuzzleManager.Instance.RegistarCor(corDesteBotao);
-}
 }

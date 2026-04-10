@@ -1,34 +1,39 @@
 using UnityEngine;
 using System.Collections;
 
-public class PortaMecanismo : MonoBehaviour
+public class PortaMecanismo : MonoBehaviour, IInteragivel
 {
     public float anguloAberta = 90f;
     public float duracao = 0.6f;
-
-    // Offset da dobradiça relativo ao centro da porta
-    // Se a porta tem largura 1, a dobradiça está a 0.5 para a esquerda
     public float offsetDobradiça = 0.5f;
+    public bool temTranca = false; // se true, só abre via ItemRecetor
 
     private bool estaAberta = false;
     private bool aAnimar = false;
 
-    // Calcula o ponto da dobradiça automaticamente em runtime
-    private Vector3 PontoDobradiça()
+    public string TextoInteracao() => estaAberta ? "Fechar porta" : "Abrir porta";
+
+    private Vector3 PontoDobradiça() =>
+        transform.position + transform.right * -offsetDobradiça;
+
+    public void Interagir()
     {
-        return transform.position + transform.right * -offsetDobradiça;
+        if (!temTranca)
+            AbrirFechar();
     }
 
     public void AbrirFechar()
     {
         if (!aAnimar)
+        {
+            AudioManager.Instance.TocarPorta();
             StartCoroutine(AnimarPorta());
+        }
     }
 
     IEnumerator AnimarPorta()
     {
         aAnimar = true;
-
         float angulo = estaAberta ? -anguloAberta : anguloAberta;
         float girado = 0f;
 
@@ -36,11 +41,9 @@ public class PortaMecanismo : MonoBehaviour
         {
             float passo = (angulo / duracao) * Time.deltaTime;
 
-            // Não ultrapassar o ângulo final
             if (Mathf.Abs(girado + passo) > Mathf.Abs(angulo))
                 passo = angulo - girado;
 
-            // Roda à volta do ponto da dobradiça calculado
             transform.RotateAround(PontoDobradiça(), Vector3.up, passo);
             girado += passo;
             yield return null;
@@ -50,7 +53,6 @@ public class PortaMecanismo : MonoBehaviour
         aAnimar = false;
     }
 
-    // Desenha o pivot no editor para poderes ver onde está
     void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

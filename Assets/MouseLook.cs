@@ -1,41 +1,56 @@
 using UnityEngine;
 
-public class MouseLook : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
-    public float mouseSensitivity = 100f;
+    [Header("Alvos")]
+    public Transform headBone;
     public Transform playerBody;
 
-    [Header("Anti-puxada")]
-    public float maxDeltaPerFrame = 10f; // corta picos acima deste valor
+    [Header("Configurações de Visão")]
+    public float mouseSensitivity = 0.1f;
+    public Vector3 eyeOffset = new Vector3(0, 0.1f, 0.1f);
+
+    [Header("Suavização")]
+    public float suavizacao = 20f;
 
     float xRotation = 0f;
+    float yRotation = 0f;
+    private PlayerMovement playerMovement;
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        yRotation = playerBody.eulerAngles.y;
+        playerMovement = playerBody.GetComponent<PlayerMovement>();
     }
 
-    void Update()
+    void LateUpdate()
     {
-        // GetAxisRaw não tem smoothing acumulado — mais preciso
-        float mouseX = Input.GetAxisRaw("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxisRaw("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        if (headBone == null || playerBody == null) return;
+        if (playerMovement == null) return;
+        if (GameManager.InputBloqueado) return;
 
-        // Corta picos — se o delta for absurdo, ignora
-        mouseX = Mathf.Clamp(mouseX, -maxDeltaPerFrame, maxDeltaPerFrame);
-        mouseY = Mathf.Clamp(mouseY, -maxDeltaPerFrame, maxDeltaPerFrame);
+        // 1. POSIÇÃO suavizada — X e Z seguem o corpo, Y segue o osso
+        Vector3 posAlvo = new Vector3(
+            playerBody.position.x,
+            headBone.position.y,
+            playerBody.position.z
+        ) + playerBody.TransformDirection(eyeOffset);
 
-        xRotation -= mouseY;
+        transform.position = Vector3.Lerp(
+            transform.position,
+            posAlvo,
+            suavizacao * Time.deltaTime
+        );
+
+        // 2. ROTAÇÃO
+        xRotation -= playerMovement.lookInput.y * mouseSensitivity;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        yRotation += playerMovement.lookInput.x * mouseSensitivity;
 
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        playerBody.Rotate(Vector3.up * mouseX);
-    }
+        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0f);
 
-    // Garante que o lock é reativado se a janela perder foco
-    void OnApplicationFocus(bool hasFocus)
-    {
-        if (hasFocus)
-            Cursor.lockState = CursorLockMode.Locked;
+        // 3. CORPO só roda para os lados
+        playerBody.rotation = Quaternion.Euler(0f, yRotation, 0f);
     }
 }

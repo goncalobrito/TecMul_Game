@@ -113,6 +113,7 @@ public class Inventario : MonoBehaviour
     public ItemData ItemSelecionado()
     {
         if (itens.Count == 0 || slotSelecionado >= itens.Count) return null;
+        Debug.Log($"Item selecionado: {itens[slotSelecionado]?.nomeItem}");
         return itens[slotSelecionado];
     }
 }

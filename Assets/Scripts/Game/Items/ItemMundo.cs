@@ -1,12 +1,11 @@
 using UnityEngine;
 
-public class ItemMundo : MonoBehaviour
+public class ItemMundo : MonoBehaviour, IInteragivel
 {
     public ItemData dados;
 
     void Start()
     {
-        // Garante que tem Rigidbody para cair no chão
         if (GetComponent<Rigidbody>() == null)
         {
             Rigidbody rb = gameObject.AddComponent<Rigidbody>();
@@ -14,8 +13,14 @@ public class ItemMundo : MonoBehaviour
         }
     }
 
+    public string TextoInteracao() => dados != null ? $"Apanhar {dados.nomeItem}" : "Apanhar";
+
+    public void Interagir() => Apanhar();
+
     public void Apanhar()
     {
+        AudioManager.Instance.TocarApanharItem();
+        Debug.Log($"A apanhar: {dados?.nomeItem} | dados é null: {dados == null}");
         if (Inventario.Instance.AdicionarItem(dados))
             Destroy(gameObject);
     }

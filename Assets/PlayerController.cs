@@ -1,87 +1,168 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movimento")]
+    private AnimationHandler animationHandler;
+
+    [Header("Componentes")]
     public CharacterController controller;
-    public float speed = 12f;
-    public float sprintSpeed = 18f;
+    public Animator animator;
+    private PlayerInput playerInput;
+    private InputAction sprintAction;
+
+    [Header("Movimento")]
+    public float speed = 3f;
+    public float sprintSpeed = 5f;
+    public float speedCrouch = 1.5f;
+    private Vector2 inputMovimento;
 
     [Header("Salto e Gravidade")]
     public float jumpHeight = 1.5f;
     public float gravity = -20f;
+    private Vector3 velocity;
+    private bool estaNoChao;
+    private bool estaNoAr = false;
 
     [Header("Crouch")]
     public float alturaNormal = 2f;
     public float alturaCrouch = 1f;
-    public float speedCrouch = 6f;
-    public Transform cameraTransform;
-
-    private Vector3 velocity;
-    private bool estaNoChao;
     private bool estaCrouch = false;
+
+    // Propriedades públicas para o FootstepController e CameraController
+    public Vector2 lookInput { get; private set; }
+    public bool EstaCrouch => estaCrouch;
+    public bool EstaSprint => sprintAction.IsPressed();
+    public bool EstaAMover() => inputMovimento.magnitude > 0.1f;
+
+    void Awake()
+    {
+        animationHandler = GetComponent<AnimationHandler>();
+        playerInput = GetComponent<PlayerInput>();
+        sprintAction = playerInput.actions["Sprint"];
+    }
 
     void Update()
     {
-        // --- CHÃO com Raycast (deteta qualquer objeto sólido) ---
-        estaNoChao = Physics.Raycast(transform.position, Vector3.down, 
-                        controller.height / 2f + 0.1f);
+        if (GameManager.InputBloqueado) return;
+
+        bool aSprinter = sprintAction.IsPressed();
+
+        VerificarChao();
+        ProcessarMovimento(aSprinter);
+        ProcessarGravidade();
+        AtualizarAnimator(aSprinter);
+    }
+
+    // --- INPUTS ---
+    public void OnMove(InputValue value) => inputMovimento = value.Get<Vector2>();
+    public void OnJump(InputValue value) { if (value.isPressed) TentarSaltar(); }
+    public void OnCrouch(InputValue value) { if (value.isPressed) ToggleCrouch(); }
+    public void OnLook(InputValue value)
+    {
+        if (GameManager.InputBloqueado) { lookInput = Vector2.zero; return; }
+        lookInput = value.Get<Vector2>();
+    }
+
+    void ProcessarMovimento(bool aSprinter)
+    {
+        if (inputMovimento.magnitude < 0.1f) return;
+
+        Vector3 direcao = transform.right * inputMovimento.x
+                        + transform.forward * inputMovimento.y;
+        direcao.Normalize();
+
+        float velocidade;
+        if (estaCrouch)
+            velocidade = speedCrouch;
+        else if (aSprinter)
+            velocidade = sprintSpeed;
+        else
+            velocidade = speed;
+
+        controller.Move(direcao * velocidade * Time.deltaTime);
+    }
+
+    void AtualizarAnimator(bool aSprinter)
+    {
+        bool isRunning = aSprinter && !estaCrouch;
+
+        Vector2 inputNorm = inputMovimento.magnitude > 0.1f
+            ? inputMovimento.normalized
+            : Vector2.zero;
+
+        if (estaCrouch) inputNorm *= 0.5f;
+
+        animationHandler.UpdateAnimation(inputNorm, isRunning);
+
+        animator.SetBool("IsCrouching", estaCrouch);
+        animator.SetBool("IsJumping", estaNoAr);
+    }
+
+    void TentarSaltar()
+    {
+        if (estaNoChao && !estaCrouch)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            animator.SetBool("IsJumping", true);
+            estaNoAr = true;
+        }
+    }
+
+    void VerificarChao()
+    {
+        Vector3 bottom = transform.position + controller.center + Vector3.down * (controller.height / 2f);
+        estaNoChao = Physics.CheckSphere(bottom, 0.15f);
 
         if (estaNoChao && velocity.y < 0)
+        {
             velocity.y = -2f;
-
-        // --- MOVIMENTO ---
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-        Vector3 move = transform.right * x + transform.forward * z;
-
-        bool aSprinter = Input.GetKey(KeyCode.LeftShift) && !estaCrouch;
-        float velocidadeAtual = estaCrouch ? speedCrouch : (aSprinter ? sprintSpeed : speed);
-
-        controller.Move(move * velocidadeAtual * Time.deltaTime);
-
-        // --- SALTO ---
-        if (Input.GetKeyDown(KeyCode.Space) && estaNoChao && !estaCrouch)
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
-        // --- CROUCH ---
-        if (Input.GetKeyDown(KeyCode.LeftControl))
-            ToggleCrouch();
-
-        // --- GRAVIDADE ---
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+            if (estaNoAr)
+            {
+                animator.SetBool("IsJumping", false);
+                estaNoAr = false;
+            }
+        }
     }
 
     void ToggleCrouch()
     {
-        estaCrouch = !estaCrouch;
-
-        if (estaCrouch)
+        if (!estaCrouch)
         {
+            estaCrouch = true;
             controller.height = alturaCrouch;
-            cameraTransform.localPosition = new Vector3(0, alturaCrouch * 0.4f, 0);
+            controller.center = new Vector3(controller.center.x, -0.55f, controller.center.z);
         }
         else
         {
-            // verifica se há teto antes de se levantar
-            if (!Physics.Raycast(transform.position, Vector3.up, alturaNormal))
-            {
-                controller.height = alturaNormal;
-                cameraTransform.localPosition = new Vector3(0, alturaNormal * 0.4f, 0);
-            }
-            else
-            {
-                estaCrouch = true;
-            }
+            LevantarCrouch();
         }
+    }
+
+    void LevantarCrouch()
+    {
+        float raioVerificacao = alturaNormal - 0.1f;
+        bool temTeto = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.up, raioVerificacao);
+
+        if (!temTeto)
+        {
+            estaCrouch = false;
+            controller.height = alturaNormal;
+            controller.center = new Vector3(controller.center.x, -0.05f, controller.center.z);
+        }
+    }
+
+    void ProcessarGravidade()
+    {
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 
     void OnDrawGizmosSelected()
     {
-        // Mostra o raycast no editor
+        if (controller == null) return;
+        Vector3 bottom = transform.position + controller.center + Vector3.down * (controller.height / 2f);
         Gizmos.color = estaNoChao ? Color.green : Color.red;
-        Gizmos.DrawLine(transform.position, 
-                        transform.position + Vector3.down * (controller.height / 2f + 0.1f));
+        Gizmos.DrawWireSphere(bottom, 0.15f);
     }
 }

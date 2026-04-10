@@ -38,6 +38,7 @@ public class NotasUI : MonoBehaviour
 
     public void FecharNota()
     {
+        GameManager.InputBloqueado = false;
         painelNota.SetActive(false);
         notaAberta = false;
 

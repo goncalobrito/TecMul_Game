@@ -5,10 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Interactable
-  - Item
-  - Porta
   - Led
-  - Nota
   layers:
   - Default
   - TransparentFX

@@ -1,11 +1,14 @@
 using UnityEngine;
 
-public class NotaMundo : MonoBehaviour
+public class NotaMundo : MonoBehaviour, IInteragivel
 {
     public NotaData dados;
 
-    public void Ler()
+    public string TextoInteracao() => "Ler nota";
+
+    public void Interagir()
     {
+        GameManager.InputBloqueado = true;
         NotasUI.Instance.MostrarNota(dados);
     }
 }
