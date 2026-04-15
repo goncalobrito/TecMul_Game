@@ -9,4 +9,7 @@ public class ItemData : ScriptableObject
     public TipoItem tipo;
     [TextArea] public string descricao;
     public GameObject prefabNaMao; // único prefab para tudo
+
+    public Vector3 posicaoOffset;    // Ex: (0.1, 0, 0)
+    public Vector3 rotacaoOffset;
 }

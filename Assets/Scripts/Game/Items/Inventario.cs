@@ -57,8 +57,9 @@ public class Inventario : MonoBehaviour
         if (item == null || item.prefabNaMao == null) return;
 
         itemVisualAtual = Instantiate(item.prefabNaMao, pontoNaMao);
-        itemVisualAtual.transform.localPosition = Vector3.zero;
-        itemVisualAtual.transform.localRotation = Quaternion.identity;
+
+        itemVisualAtual.transform.localPosition = item.posicaoOffset;
+        itemVisualAtual.transform.localRotation = Quaternion.Euler(item.rotacaoOffset);
 
         // Desativa física em todos os Rigidbodies (pai e filhos)
         foreach (Rigidbody rb in itemVisualAtual.GetComponentsInChildren<Rigidbody>())

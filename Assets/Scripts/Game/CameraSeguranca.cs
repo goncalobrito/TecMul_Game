@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CameraSeguranca : MonoBehaviour, IInteragivel
 {
@@ -24,6 +25,7 @@ public class CameraSeguranca : MonoBehaviour, IInteragivel
     public void Interagir()
     {
         aVer = true;
+        GameManager.MenuOcupado = true;
         GameManager.InputBloqueado = true;
         cameraPrincipal.gameObject.SetActive(false);
         cameraSeguranca.gameObject.SetActive(true);
@@ -32,8 +34,15 @@ public class CameraSeguranca : MonoBehaviour, IInteragivel
     void Sair()
     {
         aVer = false;
-        GameManager.InputBloqueado = false;
         cameraSeguranca.gameObject.SetActive(false);
         cameraPrincipal.gameObject.SetActive(true);
+        StartCoroutine(LibertarMenu());
+    }
+
+    IEnumerator LibertarMenu()
+    {
+        yield return new WaitForEndOfFrame();
+        GameManager.MenuOcupado = false;
+        GameManager.InputBloqueado = false;
     }
 }

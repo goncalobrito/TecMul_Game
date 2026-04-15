@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PortaMecanismo : MonoBehaviour, IInteragivel
+public class PortaMecanismo : MonoBehaviour, IInteragivel, IAbrivel
 {
     public float anguloAberta = 90f;
     public float duracao = 0.6f;

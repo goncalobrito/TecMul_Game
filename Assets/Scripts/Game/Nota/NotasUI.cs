@@ -19,7 +19,7 @@ public class NotasUI : MonoBehaviour
 
     void Update()
     {
-        if (notaAberta && Input.GetKeyDown(KeyCode.X))
+        if (notaAberta && Input.GetKeyDown(KeyCode.Escape))
             FecharNota();
     }
 
@@ -30,6 +30,9 @@ public class NotasUI : MonoBehaviour
         textoConteudo.text = nota.conteudo;
         notaAberta = true;
 
+        GameManager.InputBloqueado = true;
+        GameManager.MenuOcupado = true;
+
         // Liberta o rato para ler
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
@@ -38,12 +41,20 @@ public class NotasUI : MonoBehaviour
 
     public void FecharNota()
     {
-        GameManager.InputBloqueado = false;
         painelNota.SetActive(false);
         notaAberta = false;
 
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        StartCoroutine(LibertarMenu());
+    }
+
+    System.Collections.IEnumerator LibertarMenu()
+    {
+        yield return new WaitForEndOfFrame();
+        GameManager.InputBloqueado = false;
+        GameManager.MenuOcupado = false;
     }
 }

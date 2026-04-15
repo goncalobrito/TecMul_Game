@@ -1,10 +1,14 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class ItemRecetor : MonoBehaviour, IInteragivel
 {
     public ItemData itemNecessario;
-    public PortaMecanismo porta;
-    public PuzzleManager puzzle;
+    /* public PortaMecanismo porta;
+    public PuzzleManager puzzle; */
+
+    [Header("Alvos")]
+    public List<MonoBehaviour> alvos;
 
     private bool jaUsado = false;
 
@@ -38,8 +42,11 @@ public class ItemRecetor : MonoBehaviour, IInteragivel
             jaUsado = true;
             Inventario.Instance.RemoverItem(itemAtual);
 
-            if (porta != null) porta.AbrirFechar();
-            if (puzzle != null) puzzle.resolverPuzzle();
+            foreach (var alvo in alvos)
+            {
+                if (alvo is IAbrivel abrivel) abrivel.AbrirFechar();
+                if (alvo is IInteragivel interagivel) interagivel.Interagir();
+            }
         }
         else
         {
