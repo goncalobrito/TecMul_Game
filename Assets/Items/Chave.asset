@@ -17,5 +17,5 @@ MonoBehaviour:
   tipo: 0
   descricao: Usado para abrir portas
   prefabNaMao: {fileID: 2580326624244266343, guid: f124bc090b371324e81e434c4ce294ee, type: 3}
-  posicaoOffset: {x: 0, y: 0, z: 0}
-  rotacaoOffset: {x: 0, y: 0, z: 0}
+  posicaoOffset: {x: -0.07, y: 0.25, z: 0.2}
+  rotacaoOffset: {x: 160, y: -90, z: 90}

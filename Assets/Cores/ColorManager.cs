@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 public class ColorManager : MonoBehaviour
 {
     [Header("Configurações de Cor")]
-    public bool modoDiscoAtivo = true;
+    public bool modoDiscoAtivo = false;
     [ColorUsage(true, true)]
     public Color corAtual = Color.white;
     public float intensidade = 5f;

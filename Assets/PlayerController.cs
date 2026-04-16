@@ -7,7 +7,6 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Componentes")]
     public CharacterController controller;
-    public Animator animator;
     private PlayerInput playerInput;
     private InputAction sprintAction;
 
@@ -29,24 +28,24 @@ public class PlayerMovement : MonoBehaviour
     public float alturaCrouch = 1f;
     private bool estaCrouch = false;
 
-    // Propriedades públicas para o FootstepController e CameraController
     public Vector2 lookInput { get; private set; }
     public bool EstaCrouch => estaCrouch;
-    public bool EstaSprint => sprintAction.IsPressed();
+    public bool EstaSprint => sprintAction != null && sprintAction.IsPressed();
     public bool EstaAMover() => inputMovimento.magnitude > 0.1f;
 
     void Awake()
     {
         animationHandler = GetComponent<AnimationHandler>();
         playerInput = GetComponent<PlayerInput>();
-        sprintAction = playerInput.actions["Sprint"];
+        if (playerInput != null)
+            sprintAction = playerInput.actions["Sprint"];
     }
 
     void Update()
     {
         if (GameManager.InputBloqueado) return;
 
-        bool aSprinter = sprintAction.IsPressed();
+        bool aSprinter = EstaSprint;
 
         VerificarChao();
         ProcessarMovimento(aSprinter);
@@ -54,7 +53,6 @@ public class PlayerMovement : MonoBehaviour
         AtualizarAnimator(aSprinter);
     }
 
-    // --- INPUTS ---
     public void OnMove(InputValue value) => inputMovimento = value.Get<Vector2>();
     public void OnJump(InputValue value) { if (value.isPressed) TentarSaltar(); }
     public void OnCrouch(InputValue value) { if (value.isPressed) ToggleCrouch(); }
@@ -66,37 +64,28 @@ public class PlayerMovement : MonoBehaviour
 
     void ProcessarMovimento(bool aSprinter)
     {
-        if (inputMovimento.magnitude < 0.1f) return;
-
-        Vector3 direcao = transform.right * inputMovimento.x
-                        + transform.forward * inputMovimento.y;
-        direcao.Normalize();
+        Vector3 direcao = transform.right * inputMovimento.x + transform.forward * inputMovimento.y;
+        if (direcao.magnitude > 1f) direcao.Normalize();
 
         float velocidade;
-        if (estaCrouch)
-            velocidade = speedCrouch;
-        else if (aSprinter)
-            velocidade = sprintSpeed;
-        else
-            velocidade = speed;
+        if (estaCrouch) velocidade = speedCrouch;
+        else if (aSprinter && inputMovimento.y > 0) velocidade = sprintSpeed; // Só corre para a frente
+        else velocidade = speed;
 
         controller.Move(direcao * velocidade * Time.deltaTime);
     }
 
     void AtualizarAnimator(bool aSprinter)
     {
-        bool isRunning = aSprinter && !estaCrouch;
+        if (animationHandler == null) return;
 
-        Vector2 inputNorm = inputMovimento.magnitude > 0.1f
-            ? inputMovimento.normalized
-            : Vector2.zero;
+        bool isRunning = aSprinter && inputMovimento.y > 0.1f && !estaCrouch;
 
+        Vector2 inputNorm = inputMovimento.magnitude > 0.1f ? inputMovimento.normalized : Vector2.zero;
         if (estaCrouch) inputNorm *= 0.5f;
 
-        animationHandler.UpdateAnimation(inputNorm, isRunning);
-
-        animator.SetBool("IsCrouching", estaCrouch);
-        animator.SetBool("IsJumping", estaNoAr);
+        // Única chamada necessária para animação
+        animationHandler.UpdateAnimation(inputNorm, isRunning, estaCrouch, estaNoAr);
     }
 
     void TentarSaltar()
@@ -104,8 +93,7 @@ public class PlayerMovement : MonoBehaviour
         if (estaNoChao && !estaCrouch)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            animator.SetBool("IsJumping", true);
-            estaNoAr = true;
+            estaNoAr = true; 
         }
     }
 
@@ -117,11 +105,7 @@ public class PlayerMovement : MonoBehaviour
         if (estaNoChao && velocity.y < 0)
         {
             velocity.y = -2f;
-            if (estaNoAr)
-            {
-                animator.SetBool("IsJumping", false);
-                estaNoAr = false;
-            }
+            estaNoAr = false;
         }
     }
 

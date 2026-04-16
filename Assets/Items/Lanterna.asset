@@ -17,5 +17,5 @@ MonoBehaviour:
   tipo: 2
   descricao: ilumina varias coisas
   prefabNaMao: {fileID: 8466539120707740872, guid: 655fa81d2c6c52541b0d0ee2f7934471, type: 3}
-  posicaoOffset: {x: 0, y: 0, z: 0}
-  rotacaoOffset: {x: 0, y: 180, z: 0}
+  posicaoOffset: {x: 0, y: 0.1, z: 0.17}
+  rotacaoOffset: {x: 0.4, y: 180, z: 0}

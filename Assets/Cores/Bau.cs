@@ -34,10 +34,11 @@ public class Bau : MonoBehaviour, IInteragivel, IAbrivel
     // Chamado pelo ItemRecetor quando usas a chave
     public void AbrirFechar()
     {
-           Debug.Log("O método Abrir foi chamado!");
+        Debug.Log("O método AbrirFechar foi chamado!");
         desbloqueado = true;
         if (!aAnimar) StartCoroutine(AnimarTampa());
     }
+
 
     private Vector3 PontoDobradiça()
     {
