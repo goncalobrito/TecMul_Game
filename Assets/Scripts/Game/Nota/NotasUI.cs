@@ -14,7 +14,7 @@ public class NotasUI : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        painelNota.SetActive(false); // esconde o painel mas o objeto pai fica ativo
+        painelNota.SetActive(false);
     }
 
     void Update()
@@ -33,7 +33,6 @@ public class NotasUI : MonoBehaviour
         GameManager.InputBloqueado = true;
         GameManager.MenuOcupado = true;
 
-        // Liberta o rato para ler
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -41,19 +40,19 @@ public class NotasUI : MonoBehaviour
 
     public void FecharNota()
     {
-        painelNota.SetActive(false);
         notaAberta = false;
 
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        StartCoroutine(LibertarMenu());
+        StartCoroutine(FecharELibertarMenu());
     }
 
-    System.Collections.IEnumerator LibertarMenu()
+    System.Collections.IEnumerator FecharELibertarMenu()
     {
         yield return new WaitForEndOfFrame();
+        painelNota.SetActive(false);
         GameManager.InputBloqueado = false;
         GameManager.MenuOcupado = false;
     }

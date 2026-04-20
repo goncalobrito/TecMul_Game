@@ -36,6 +36,7 @@ public class ColorManager : MonoBehaviour
         {
             StartCoroutine(RotinaDisco());
         }
+        corAtual = Color.white; 
     }
 
     void BuscarLeds()
@@ -59,36 +60,41 @@ public class ColorManager : MonoBehaviour
         Debug.Log($"ColorManager: Encontrados {renderers.Count} LEDs e {luzes.Count} luzes.");
     }
 
+    // Ligue este método ao evento OnClick() do seu botão na UI
     public void AlternarDisco()
     {
         modoDiscoAtivo = !modoDiscoAtivo;
 
         if (modoDiscoAtivo)
         {
-            StartCoroutine(RotinaDisco());
+            // Usamos o nome da função como string para garantir que possamos pará-la especificamente
+            StartCoroutine("RotinaDisco");
         }
         else
         {
-            StopAllCoroutines(); // Para o disco imediatamente
+            StopCoroutine("RotinaDisco");
+            // Opcional: Voltar para uma cor padrão (ex: branco) ao desligar
+            corAtual = Color.white; 
         }
     }
 
     private IEnumerator RotinaDisco()
     {
-        float tempo = 0.2f;
-        Color[] cores = { Color.red, Color.green, Color.blue };
+        float intervalo = 0.2f; // Velocidade da troca de cores
+        Color[] cores = { Color.red, Color.green, Color.blue, Color.magenta, Color.yellow };
         int indiceAtual = 0;
 
         while (modoDiscoAtivo)
         {
             corAtual = cores[indiceAtual];
             indiceAtual = (indiceAtual + 1) % cores.Length;
-            yield return new WaitForSeconds(tempo);
+            yield return new WaitForSeconds(intervalo);
         }
     }
 
     void Update()
     {
+
         Color corFinal = corAtual * intensidade;
 
         // Atualiza Renderers

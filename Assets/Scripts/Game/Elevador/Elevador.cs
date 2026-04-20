@@ -15,8 +15,8 @@ public class ElevadorController : MonoBehaviour, IAbrivel
 
     [Header("Iluminação")]
     public Light luzTeto;
-    public float intensidadeNormal = 0.01f;
-    public float intensidadeChegada = 1.0f;
+    public float intensidadeNormal = 1f;
+    public float intensidadeChegada = 1.3f;
     public bool piscarNaDescida = true;
 
     private bool jaAbriu = false;

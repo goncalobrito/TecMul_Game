@@ -8,7 +8,6 @@ public class NotaMundo : MonoBehaviour, IInteragivel
 
     public void Interagir()
     {
-        GameManager.InputBloqueado = true;
         NotasUI.Instance.MostrarNota(dados);
     }
 }

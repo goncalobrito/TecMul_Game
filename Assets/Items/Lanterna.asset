@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Lanterna
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   nomeItem: Lanterna UV
-  icone: {fileID: 21300000, guid: b56cd0d3e6bf7e443ab848a9abc6c6bc, type: 3}
+  icone: {fileID: 21300000, guid: 54a8ce1b5c33f3947b50ebb1822967cb, type: 3}
   tipo: 2
   descricao: ilumina varias coisas
   prefabNaMao: {fileID: 8466539120707740872, guid: 655fa81d2c6c52541b0d0ee2f7934471, type: 3}
