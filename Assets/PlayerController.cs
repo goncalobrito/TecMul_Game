@@ -115,7 +115,7 @@ public class PlayerMovement : MonoBehaviour
         {
             estaCrouch = true;
             controller.height = alturaCrouch;
-            controller.center = new Vector3(controller.center.x, -0.55f, controller.center.z);
+            controller.center = new Vector3(controller.center.x, -0.12f, controller.center.z);
         }
         else
         {

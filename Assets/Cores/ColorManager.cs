@@ -11,6 +11,8 @@ public class ColorManager : MonoBehaviour
     public Color corAtual = Color.white;
     public float intensidade = 5f;
 
+    public static ColorManager Instance;
+
     private Renderer[] paredesBrilhantes;
     private Light[] luzesLed;
     private List<HiddenObject> itensEscondidos = new List<HiddenObject>();
@@ -26,6 +28,18 @@ public class ColorManager : MonoBehaviour
         Mathf.Clamp01(corAtual.b),
         1f
     );
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {

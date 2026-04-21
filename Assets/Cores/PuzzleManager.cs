@@ -38,6 +38,8 @@ public class PuzzleManager : MonoBehaviour
             Debug.Log("Puzzle resolvido! Porta a abrir.");
             porta.AbrirFechar();
             passoAtual = 0; // reset por segurança
+            ColorManager.Instance.corAtual = Color.white; // reset cor para branco
+            AudioManager.Instance.TocarSucesso();
         }
     }
 
