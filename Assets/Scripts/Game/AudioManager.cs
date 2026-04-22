@@ -23,6 +23,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip somApanharItem;
     public AudioClip somLanterna;
     public AudioClip somElevador;
+    public AudioClip somCaçadeira;
+    public AudioClip somMota;
 
     private AudioSource source;
 
@@ -64,6 +66,9 @@ public class AudioManager : MonoBehaviour
     public void TocarSucesso() => Tocar(somSucesso);
     public void TocarApanharItem() => Tocar(somApanharItem, 0.7f);
     public void TocarLanterna() => Tocar(somLanterna, 0.7f);
+    public void TocarCaçadeira() => Tocar(somCaçadeira, 0.7f);
+
+    public void Tocarmota() => Tocar(somMota, 0.7f);
 
     // ALTERADO: Este método agora configura o Source para Loop
     public void TocarElevador()

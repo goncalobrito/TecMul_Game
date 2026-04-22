@@ -43,7 +43,16 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.InputBloqueado) return;
+        // Se o input bloquear, forçamos o movimento a parar para não andar sozinho
+        if (GameManager.InputBloqueado)
+        {
+            inputMovimento = Vector2.zero;
+            // Opcional: se quiseres que a gravidade continue a atuar mesmo no puzzle:
+            VerificarChao();
+            ProcessarGravidade();
+            AtualizarAnimator(false);
+            return;
+        }
 
         bool aSprinter = EstaSprint;
 
@@ -53,11 +62,27 @@ public class PlayerMovement : MonoBehaviour
         AtualizarAnimator(aSprinter);
     }
 
-    public void OnMove(InputValue value) => inputMovimento = value.Get<Vector2>();
-    public void OnJump(InputValue value) { if (value.isPressed) TentarSaltar(); }
-    public void OnCrouch(InputValue value) { if (value.isPressed) ToggleCrouch(); }
+    public void OnMove(InputValue value)
+    {
+        if (GameManager.InputBloqueado) return;
+        inputMovimento = value.Get<Vector2>();
+    }
+
+    public void OnJump(InputValue value)
+    {
+        if (GameManager.InputBloqueado) return; // IMPEDE O SALTO NO PUZZLE
+        if (value.isPressed) TentarSaltar();
+    }
+
+    public void OnCrouch(InputValue value)
+    {
+        if (GameManager.InputBloqueado) return;
+        if (value.isPressed) ToggleCrouch();
+    }
+
     public void OnLook(InputValue value)
     {
+        // Já tinhas esta bem feita!
         if (GameManager.InputBloqueado) { lookInput = Vector2.zero; return; }
         lookInput = value.Get<Vector2>();
     }
@@ -93,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
         if (estaNoChao && !estaCrouch)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            estaNoAr = true; 
+            estaNoAr = true;
         }
     }
 
