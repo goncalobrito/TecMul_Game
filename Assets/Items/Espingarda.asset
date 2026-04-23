@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Espingarda
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   nomeItem: Espingarda
-  icone: {fileID: 0}
+  icone: {fileID: 21300000, guid: 9cf6784798b7e2d42965f4f622185723, type: 3}
   tipo: 2
   descricao: Propria pra matar pombas
   prefabNaMao: {fileID: 3001130828302345547, guid: 060bbf1e4df00884686d9a5a4b176a2c, type: 3}
