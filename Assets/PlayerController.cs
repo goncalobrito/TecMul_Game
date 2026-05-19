@@ -1,73 +1,177 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
-    [Header("Configurações de Movimento")]
-    public float velocidade = 5f;
-    public float forcaPulo = 2f;
-    public float gravidade = -9.81f;
+    private AnimationHandler animationHandler;
 
-    [Header("Configurações do Rato")]
-    public float sensibilidadeRato = 200f;
-    public Transform cameraTransform;
+    [Header("Componentes")]
+    public CharacterController controller;
+    private PlayerInput playerInput;
+    private InputAction sprintAction;
 
-    private CharacterController controller;
-    private Vector3 velocidadeVertical;
-    private float rotacaoX = 0f;
+    [Header("Movimento")]
+    public float speed = 3f;
+    public float sprintSpeed = 5f;
+    public float speedCrouch = 1.5f;
+    private Vector2 inputMovimento;
 
-    void Start()
+    [Header("Salto e Gravidade")]
+    public float jumpHeight = 1.5f;
+    public float gravity = -20f;
+    private Vector3 velocity;
+    private bool estaNoChao;
+    private bool estaNoAr = false;
+
+    [Header("Crouch")]
+    public float alturaNormal = 2f;
+    public float alturaCrouch = 1f;
+    private bool estaCrouch = false;
+
+    public Vector2 lookInput { get; private set; }
+    public bool EstaCrouch => estaCrouch;
+    public bool EstaSprint => sprintAction != null && sprintAction.IsPressed();
+    public bool EstaAMover() => inputMovimento.magnitude > 0.1f;
+
+    void Awake()
     {
-        controller = GetComponent<CharacterController>();
-        
-        // Esconde o rato e prende-o no centro do ecrã
-        Cursor.lockState = CursorLockMode.Locked;
+        animationHandler = GetComponent<AnimationHandler>();
+        playerInput = GetComponent<PlayerInput>();
+        if (playerInput != null)
+            sprintAction = playerInput.actions["Sprint"];
     }
 
     void Update()
     {
-        MoverJogador();
-        RodarCamera();
-    }
-
-    void MoverJogador()
-    {
-        // Verifica se o jogador está no chão
-        bool noChao = controller.isGrounded;
-        if (noChao && velocidadeVertical.y < 0)
+        // Se o input bloquear, forçamos o movimento a parar para não andar sozinho
+        if (GameManager.InputBloqueado)
         {
-            velocidadeVertical.y = -2f;
+            inputMovimento = Vector2.zero;
+            // Opcional: se quiseres que a gravidade continue a atuar mesmo no puzzle:
+            VerificarChao();
+            ProcessarGravidade();
+            AtualizarAnimator(false);
+            return;
         }
 
-        // Input de movimento (Teclado)
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
+        bool aSprinter = EstaSprint;
 
-        Vector3 movimento = transform.right * x + transform.forward * z;
-        controller.Move(movimento * velocidade * Time.deltaTime);
-
-        // Lógica de Pulo
-        if (Input.GetButtonDown("Jump") && noChao)
-        {
-            velocidadeVertical.y = Mathf.Sqrt(forcaPulo * -2f * gravidade);
-        }
-
-        // Aplicar Gravidade
-        velocidadeVertical.y += gravidade * Time.deltaTime;
-        controller.Move(velocidadeVertical * Time.deltaTime);
+        VerificarChao();
+        ProcessarMovimento(aSprinter);
+        ProcessarGravidade();
+        AtualizarAnimator(aSprinter);
     }
 
-    void RodarCamera()
+    public void OnMove(InputValue value)
     {
-        // Input do Rato
-        float mouseX = Input.GetAxis("Mouse X") * sensibilidadeRato * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensibilidadeRato * Time.deltaTime;
+        if (GameManager.InputBloqueado) return;
+        inputMovimento = value.Get<Vector2>();
+    }
 
-        // Roda o corpo do jogador (Esquerda/Direita)
-        transform.Rotate(Vector3.up * mouseX);
+    public void OnJump(InputValue value)
+    {
+        if (GameManager.InputBloqueado) return; // IMPEDE O SALTO NO PUZZLE
+        if (value.isPressed) TentarSaltar();
+    }
 
-        // Roda a câmara (Cima/Baixo) com limite de 90 graus
-        rotacaoX -= mouseY;
-        rotacaoX = Mathf.Clamp(rotacaoX, -90f, 90f);
-        cameraTransform.localRotation = Quaternion.Euler(rotacaoX, 0f, 0f);
+    public void OnCrouch(InputValue value)
+    {
+        if (GameManager.InputBloqueado) return;
+        if (value.isPressed) ToggleCrouch();
+    }
+
+    public void OnLook(InputValue value)
+    {
+        // Já tinhas esta bem feita!
+        if (GameManager.InputBloqueado) { lookInput = Vector2.zero; return; }
+        lookInput = value.Get<Vector2>();
+    }
+
+    void ProcessarMovimento(bool aSprinter)
+    {
+        Vector3 direcao = transform.right * inputMovimento.x + transform.forward * inputMovimento.y;
+        if (direcao.magnitude > 1f) direcao.Normalize();
+
+        float velocidade;
+        if (estaCrouch) velocidade = speedCrouch;
+        else if (aSprinter && inputMovimento.y > 0) velocidade = sprintSpeed; // Só corre para a frente
+        else velocidade = speed;
+
+        controller.Move(direcao * velocidade * Time.deltaTime);
+    }
+
+    void AtualizarAnimator(bool aSprinter)
+    {
+        if (animationHandler == null) return;
+
+        bool isRunning = aSprinter && inputMovimento.y > 0.1f && !estaCrouch;
+
+        Vector2 inputNorm = inputMovimento.magnitude > 0.1f ? inputMovimento.normalized : Vector2.zero;
+        if (estaCrouch) inputNorm *= 0.5f;
+
+        // Única chamada necessária para animação
+        animationHandler.UpdateAnimation(inputNorm, isRunning, estaCrouch, estaNoAr);
+    }
+
+    void TentarSaltar()
+    {
+        if (estaNoChao && !estaCrouch)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            estaNoAr = true;
+        }
+    }
+
+    void VerificarChao()
+    {
+        Vector3 bottom = transform.position + controller.center + Vector3.down * (controller.height / 2f);
+        estaNoChao = Physics.CheckSphere(bottom, 0.15f);
+
+        if (estaNoChao && velocity.y < 0)
+        {
+            velocity.y = -2f;
+            estaNoAr = false;
+        }
+    }
+
+    void ToggleCrouch()
+    {
+        if (!estaCrouch)
+        {
+            estaCrouch = true;
+            controller.height = alturaCrouch;
+            controller.center = new Vector3(controller.center.x, -0.12f, controller.center.z);
+        }
+        else
+        {
+            LevantarCrouch();
+        }
+    }
+
+    void LevantarCrouch()
+    {
+        float raioVerificacao = alturaNormal - 0.1f;
+        bool temTeto = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.up, raioVerificacao);
+
+        if (!temTeto)
+        {
+            estaCrouch = false;
+            controller.height = alturaNormal;
+            controller.center = new Vector3(controller.center.x, -0.05f, controller.center.z);
+        }
+    }
+
+    void ProcessarGravidade()
+    {
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (controller == null) return;
+        Vector3 bottom = transform.position + controller.center + Vector3.down * (controller.height / 2f);
+        Gizmos.color = estaNoChao ? Color.green : Color.red;
+        Gizmos.DrawWireSphere(bottom, 0.15f);
     }
 }

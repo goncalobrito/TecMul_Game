@@ -1,0 +1,12 @@
+# Blender 5.0.1 MTL File: 'None'
+# www.blender.org
+
+newmtl tripo_mat_9b188f40-e429-4f93-934c-746ee639644b
+Ns 10.000005
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ad0732e4-b43f-4f86-9694-c13be098f2df_basecolor.JPEG
