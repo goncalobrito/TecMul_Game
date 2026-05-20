@@ -28,13 +28,17 @@ Destaque Especial:
 
 <table>
   <tr>
-    <td><img src="images/image_a034e6.jpg" width="400"> <br> <sub>Garagem de Motas</sub></td>
-    <td><img src="images/image_a034e9.jpg" width="400"> <br> <sub>Showroom Automóvel</sub></td>
+    <td><img src="images/6.png" width="400"> <br> <sub>Garagem de Motas</sub></td>
+    <td><img src="images/5.png" width="400"> <br> <sub>Showroom Automóvel</sub></td>
   </tr>
   <tr>
-    <td><img src="images/image_a03501.jpg" width="400"> <br> <sub>Zona de Arcades</sub></td>
-    <td><img src="images/image_a03c26.jpg" width="400"> <br> <sub>Sala de Estar / Setup</sub></td>
+    <td><img src="images/4.png" width="400"> <br> <sub>Zona de Arcades</sub></td>
+    <td><img src="images/3.png" width="400"> <br> <sub>Bau com Codigo</sub></td>
   </tr>
+  <tr>
+     <td><img src="images/2.png" width="400"> <br> <sub>Corredor</sub></td>
+     <td><img src="images/1.png" width="400"> <br> <sub>Sala de Estar</sub></td>
+   </tr>
 </table>
 
 Comandos
