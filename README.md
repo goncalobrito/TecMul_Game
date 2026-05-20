@@ -23,6 +23,20 @@ Destaque Especial:
    o- Atmosfera Imersiva: Usa a tua lanterna para explorar cantos escuros e... bem, tens uma caçadeira.
         Ela não dispara balas, mas o estrondo pode ser útil (ou apenas satisfatório).
 ```
+
+## 📸 Galeria do Projeto
+
+<table>
+  <tr>
+    <td><img src="images/image_a034e6.jpg" width="400"> <br> <sub>Garagem de Motas</sub></td>
+    <td><img src="images/image_a034e9.jpg" width="400"> <br> <sub>Showroom Automóvel</sub></td>
+  </tr>
+  <tr>
+    <td><img src="images/image_a03501.jpg" width="400"> <br> <sub>Zona de Arcades</sub></td>
+    <td><img src="images/image_a03c26.jpg" width="400"> <br> <sub>Sala de Estar / Setup</sub></td>
+  </tr>
+</table>
+
 Comandos
 
 Prepara-te para a fuga com os seguintes controlos:
