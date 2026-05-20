@@ -24,7 +24,7 @@ Destaque Especial:
         Ela não dispara balas, mas o estrondo pode ser útil (ou apenas satisfatório).
 ```
 
-## 📸 Galeria do Projeto
+-- Galeria do Projeto
 
 <table>
   <tr>
